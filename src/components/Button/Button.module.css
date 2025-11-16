@@ -1,0 +1,28 @@
+.button{
+    border-radius: 6px;
+    transition: 200ms;
+    cursor: pointer;
+}
+
+.primary{
+    background-color: var(--primary-blue);
+    color: white;
+}
+.primary:hover{
+    background-color: var(--secondary-blue);
+}
+.primary:active{
+    background-color: var(--dark-blue);
+}
+
+.secondary{
+    
+    color: var(--secondary-blue);
+}
+.secondary:hover{
+    background-color: var(--terciary-blue);
+}
+.secondary:active{
+    background-color: rgba(65,137,230,.3);
+    
+}
