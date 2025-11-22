@@ -1,22 +1,41 @@
 'use client'
 
 import Button from '@/components/Button/Button'
-import Input from '@/components/Input/Input'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
+import { recoverAccountForm, RecoverAccountFormSchema } from './RecoverAccountFormSchema'
+import { FieldInput } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
-import { Form } from 'react-bootstrap'
 
 export default function RecoverAccountForm() {
-  const [validated, setValidated] = useState(false)
+
   const router = useRouter();
+
+  const {control, handleSubmit} = useForm<RecoverAccountFormSchema>({
+    resolver: zodResolver(recoverAccountForm),
+      defaultValues: {
+        email: ""
+      }
+    })
   
-  const handleSubmit = () => {
+  const onHandleSubmit = (data: object) => {
+    console.log(data);
   }
   
   return (
-    <Form noValidate validated={validated} onSubmit={handleSubmit} className='flex flex-col gap-4'> 
-      <Input type="text" id='recoverCode' placeholder="XXXXXX" label="Código de recuperação" required/>
-      <Button variant='primary' className='py-3 mt-3' onClick={() => {handleSubmit}}>Continuar</Button>   
-    </Form>
+    <form onSubmit={handleSubmit(onHandleSubmit)} className='flex flex-col gap-4'> 
+      <Controller name='email' control={control}
+          render={({field, fieldState}) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>E-mail ou telefone</FieldLabel>
+              <FieldInput type="email" id={field.name} {...field} aria-invalid={fieldState.invalid} placeholder="E-mail"/>
+              {fieldState.error && <FieldError>{fieldState.error.message}</FieldError>}
+            </Field>
+          )}
+        />
+      <Button variant='primary' type="submit" className='py-3 mt-3'>Continuar</Button>  
+      <Button variant="secondary" type="button" className='py-3 mt-3' onClick={() => {router.push("/login")}}>Voltar</Button>  
+    </form>
   )
 }
