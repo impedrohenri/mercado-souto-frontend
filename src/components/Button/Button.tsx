@@ -1,10 +1,10 @@
 
-import { ButtonHTMLAttributes } from 'react'
+import React, { ButtonHTMLAttributes } from 'react'
 import styles from './Button.module.css'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>{
     variant: "primary" | "secondary",
-    children: string
+    children: React.ReactNode
 }
 
 export default function Button({ children, ...props}:ButtonProps) {
