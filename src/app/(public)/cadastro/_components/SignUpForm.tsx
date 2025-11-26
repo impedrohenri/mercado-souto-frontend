@@ -27,7 +27,15 @@ export default function SignUpForm() {
 
   
   const onHandleSubmit = (data: any) => {
-    console.log(data.cpf.length)
+    console.log(data)
+
+    fetch('http://localhost:3000/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
   }
 
 
