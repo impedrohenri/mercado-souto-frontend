@@ -14,7 +14,7 @@ export const signUpFormSchema = z.object({
         .email("E-mail inválido!")
         .refine((email) => isEmailAlreadyUsed(email), "Email já cadastrado."),
     phone: z
-        .string({message: "Campo obrigatório."}),
+        .string({message: "Campo obrigatório."}).nonempty("Campo obrigatório.").min(14, "Número de telefone inválido."),
     cpf: z
         .string({message: "Campo obrigatório."}).min(14, "O CPF deve ter 11 números"),
     password: z

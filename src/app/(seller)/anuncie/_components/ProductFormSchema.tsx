@@ -3,7 +3,7 @@ import z, { number } from "zod";
 
 export const productFormSchema = z.object({
     productImage: z
-        .file("Formato de arquivo inválido"),
+        .file("Selecione uma imagem para o produto"),
     title: z
         .string({message: "Informe um título válido"})
         .nonempty({message: "Informe um título válido"})
