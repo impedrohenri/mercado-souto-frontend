@@ -1,33 +1,36 @@
 'use client'
 
 import Button from '@/components/Button/Button';
-import { CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { FieldInput } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import ImagePreview from './ImagePreview';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ProductFormSchema, productFormSchema } from './ProductFormSchema';
+import { ProductFormSchema, productFormSchema, SimplifiedSpecGroup } from './ProductFormSchema';
+import { URL_API } from '@/api/index.routes';
+import axios from 'axios'
+import AttributeFields from './AttributesFields';
 
 interface IPicture {
     file: File,
     image: string
 }
 
-const categorias = [
-  {categoryId: "1", name: "Comida"},
-  {categoryId: "2", name: "Eletrônicos"},
-  {categoryId: "3", name: "Brinquedos"},
-  {categoryId: "4", name: "Jogos de Mesa"},
-  {categoryId: "5", name: "Automóveis"},
-]
+interface ICategories{
+    id: number,
+    name: string
+}
+
 
 export default function ProductForm() {
 
     const [picture, setPicture] = useState<IPicture>({} as IPicture);
+    const [categories, setCategories] = useState<ICategories[]>([]);
+    const [loading, setLoading] = useState<boolean>(false)
 
     const { control, handleSubmit } = useForm<ProductFormSchema>({
         resolver: zodResolver(productFormSchema),
@@ -37,12 +40,53 @@ export default function ProductForm() {
             productImage: "" as unknown as File,
             price: "" as unknown as number,
             stock: "" as unknown as number,
-            categoryId: "" as unknown as number
+            idCategory: "" as unknown as number
         }
     })
 
-    const onHandleSubmit = (data: any) => {
-        console.log(data)
+    const { fields: specFields, append: appendSpec, remove: removeSpec } = useFieldArray({
+        control,
+        name: "specifications",
+    });
+
+
+    useEffect(() => {
+        axios.get(`${URL_API}/category`)
+        .then((resp) => {
+            setCategories(resp.data)
+        })
+
+        console.log(categories)
+    }, [])
+
+    const onHandleSubmit = async (data: any) => {
+
+        const productImage = data.productImage
+        let formData = new FormData();
+        formData.append("image", productImage)
+        delete data.productImage;
+        const productData = data
+
+        productData.specification = "213123"
+
+
+        try {
+            setLoading(true)
+            const sellerId = 1;
+
+            const response = await axios.post(`${URL_API}/product/${sellerId}`, productData)
+            
+            const productId = response.data.id
+            
+            const imageResponse = await axios.post(`${URL_API}/product/image/${productId}`, formData)
+
+        } catch (err) {
+            
+        } finally {
+            setLoading(false)
+        }
+
+
     }
 
     return (
@@ -139,7 +183,7 @@ export default function ProductForm() {
                         </Field>)
                         } />
 
-                    <Controller name='categoryId' control={control}
+                    <Controller name='idCategory' control={control}
                         render={({ field, fieldState }) =>
                         (<Field className='flex flex-col w-full md:w-[40%]'>
                             <FieldLabel className='font-semibold text-md'>Categoria</FieldLabel>
@@ -149,8 +193,8 @@ export default function ProductForm() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        {categorias.map((cat) => {
-                                            return <SelectItem key={cat.categoryId} value={cat.categoryId}>{cat.name}</SelectItem>
+                                        {categories.map((cat) => {
+                                            return <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                                         })}
                                     </SelectGroup>
                                 </SelectContent>
@@ -164,10 +208,54 @@ export default function ProductForm() {
 
                 </div>
 
+                <hr className='w-[90%] md:my-6' />
+
+                <div className='w-full'>
+                    <h2 className='text-xl font-semibold mb-4'>Especificações Técnicas</h2>
+                    <div className='flex flex-col w-[90%] mx-auto gap-6'>
+                        {specFields.map((item, index) => (
+                            <Card key={item.id} className="p-4 shadow-sm">
+                                <div className="flex justify-between items-center mb-3">
+                                    <Controller
+                                        control={control}
+                                        name={`specifications.${index}.title`}
+                                        render={({ field, fieldState }) => (
+                                            <Field className='w-full mr-4'>
+                                                <FieldLabel className='text-lg font-medium'>Tópico {index + 1}</FieldLabel>
+                                                <FieldInput {...field} placeholder="Ex: Características Gerais" />
+                                                {fieldState.error && <FieldError>{fieldState.error.message}</FieldError>}
+                                            </Field>
+                                        )}
+                                    />
+                                    <Button type="button" onClick={() => removeSpec(index)} variant="secondary" className="p-2 text-red-500! hover:text-red-700! h-10 mt-7">
+                                        <i className='fa fa-trash'></i>
+                                    </Button>
+                                </div>
+                                
+                                <AttributeFields groupIndex={index} control={control} />
+                            </Card>
+                        ))}
+                        {specFields.length < 15 && (
+                            <Button 
+                                type="button"
+                                variant="secondary"
+                                className='px-4 py-3 mx-auto'
+                            onClick={() => appendSpec({ 
+                                title: '', 
+                                attributes: [{ id: '', text: '' }]
+                            } as SimplifiedSpecGroup)}>
+                                + Adicionar Especificações
+                            </Button>
+                        )}
+                    </div>
+                </div>
+                
+
             </CardContent>
             <CardFooter>
-                <Button variant="primary" onClick={handleSubmit(onHandleSubmit)} className='px-5 py-2 ms-auto'>
-                    Cadastrar
+                
+                <Button variant="primary" onClick={handleSubmit(onHandleSubmit)} className='px-5 py-2 ms-auto' disabled={loading}>
+                    {loading? "Cadastrando...": "Cadastrar"}
                 </Button>
             </CardFooter>
         </>
