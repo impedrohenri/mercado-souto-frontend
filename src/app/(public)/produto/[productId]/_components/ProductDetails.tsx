@@ -5,30 +5,37 @@ import Ratings from '@/utils/ratings';
 import { ProductFormSchema } from '@/app/(seller)/anuncie/_components/ProductFormSchema'
 import Link from 'next/link';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import SpecificationsTables from '@/components/SpecsTable/SpecificationsTable';
 
-interface IProps{
+interface IProps {
     productId: string
     produto: ProductFormSchema
 }
 
-export default function ProductDetails({productId, produto}: IProps) {
+export default function ProductDetails({ productId, produto }: IProps) {
 
 
     return (
         <Card className='w-[90%]'>
             <CardContent className='flex flex-wrap justify-around pt-10 '>
-                <div className='w-full md:w-4/12'>
-                    {!!produto.imageURL ? <Image src={produto.imageURL[0] || "/"} alt="" width={1000} height={1000} className='w-full' /> : null}
-                </div>
+                <div className='flex flex-wrap md:w-7/12'>
+                    <div className='w-full md:w-[50%]'>
+                        {!!produto.imageURL ? <Image src={produto.imageURL[0] || "/"} alt="" width={1000} height={1000} className='w-full' /> : null}
+                    </div>
 
-                <div className='w-full md:w-4/12'>
-                    <h1 className='font-semibold text-2xl'>{produto.title}</h1>
+                    <div className='w-full md:w-[50%] px-4'>
+                        <h1 className='font-semibold text-2xl'>{produto.title}</h1>
 
-                    <p className='mt-3'>{produto?.rate} <Ratings rating={produto.rate || 0}/></p>
+                        <p className='mt-3'>{produto?.rate} <Ratings rating={produto.rate || 0} /></p>
 
-                    <p className='text-4xl text-primary mt-3'>R$ {produto.price}</p>
+                        <p className='text-4xl text-primary mt-3'>R$ {produto.price}</p>
 
-                    <p className='mt-5 text-(--text-secondary) text-lg'>{produto.description}</p>
+                        <p className='mt-5 text-(--text-secondary) text-lg'>{produto.description}</p>
+                    </div>
+
+                    <div className='flex w-full px-4 gap-x-8'>
+                        <SpecificationsTables specifications={JSON.parse(produto.specification)} className='w-[40%]'/>
+                    </div>
                 </div>
 
                 <div className='w-full md:w-3/12 min-w-[300px] border rounded-xl p-5 py-8'>

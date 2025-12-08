@@ -33,6 +33,8 @@ export const productFormSchema = z.object({
     .array(SimplifiedSpecGroupSchema)
     .max(15, "Máximo de 15 tópicos permitidos.")
     .optional(),
+    specification: z
+    .string(),
     rate: z 
         .number()
         .min(1)
