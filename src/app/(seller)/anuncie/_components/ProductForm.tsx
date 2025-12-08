@@ -14,6 +14,7 @@ import { ProductFormSchema, productFormSchema, SimplifiedSpecGroup } from './Pro
 import { URL_API } from '@/api/index.routes';
 import axios from 'axios'
 import AttributeFields from './AttributesFields';
+import { axiosInterceptor } from '@/services/axios';
 
 interface IPicture {
     file: File,
@@ -40,7 +41,8 @@ export default function ProductForm() {
             productImage: "" as unknown as File,
             price: "" as unknown as number,
             stock: "" as unknown as number,
-            idCategory: "" as unknown as number
+            idCategory: "" as unknown as number,
+            specifications: []
         }
     })
 
@@ -51,7 +53,7 @@ export default function ProductForm() {
 
 
     useEffect(() => {
-        axios.get(`${URL_API}/category`)
+        axiosInterceptor.get(`${URL_API}/category`)
         .then((resp) => {
             setCategories(resp.data)
         })
@@ -67,18 +69,19 @@ export default function ProductForm() {
         delete data.productImage;
         const productData = data
 
-        productData.specification = "213123"
+        productData.specification = JSON.stringify(data.specifications);
+        delete productData.specifications;
 
 
         try {
             setLoading(true)
             const sellerId = 1;
 
-            const response = await axios.post(`${URL_API}/product/${sellerId}`, productData)
+            const response = await axiosInterceptor.post(`${URL_API}/product/${sellerId}`, productData)
             
             const productId = response.data.id
             
-            const imageResponse = await axios.post(`${URL_API}/product/image/${productId}`, formData)
+            const imageResponse = await axiosInterceptor.post(`${URL_API}/product/image/${productId}`, formData)
 
         } catch (err) {
             
