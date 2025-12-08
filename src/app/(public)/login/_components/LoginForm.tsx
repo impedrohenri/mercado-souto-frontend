@@ -33,15 +33,20 @@ export default function LoginForm() {
       const res = await axios.post(`${URL_API}/login`, data);
 
       const userData = res.data
+      console.log(userData)
+
+      const tokenExpires = new Date();
+      tokenExpires.setSeconds(tokenExpires.getSeconds() + userData.tokenExpiresIn);
 
       localStorage.setItem('user@clientId', userData.clientId);
       localStorage.setItem('user@token', userData.token);
       localStorage.setItem('user@roles', JSON.stringify(userData.roles));
+      document.cookie = `user@token=${userData.token}; expires=${tokenExpires.toUTCString()}; path=/`;
 
       router.push('/');
 
     } catch (error: any) {
-
+        console.error(error)
       
       if (error.response?.status === 401) {
         setError("email", { message: "E-mail ou senha incorretos." });

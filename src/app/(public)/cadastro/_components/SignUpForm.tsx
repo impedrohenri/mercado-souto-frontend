@@ -54,6 +54,7 @@ export default function SignUpForm() {
       localStorage.setItem('user@clientId', userData.clientId);
       localStorage.setItem('user@token', userData.token);
       localStorage.setItem('user@roles', JSON.stringify(userData.roles));
+      document.cookie = `user@token=${userData.token}; expires=${userData.tokenExpiresIn.toUTCString()}; path=/`;
 
 
       toast.success("Cadastro realizado com sucesso!");
