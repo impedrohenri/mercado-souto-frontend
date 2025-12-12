@@ -27,7 +27,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     const priceParts = product.price.toFixed(2).split('.');
 
     return (
-        <div className=" bg-white rounded-lg overflow-hidden shadow-sm p-4 max-h-[480px] m-0">
+        <div className=" bg-white overflow-hidden max-h-[480px] m-0">
             <Link href={`/produto/${product.id}`}>
 
                 {/* 1. Imagem do Produto */}
@@ -43,7 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </div>
 
                 {/* 2. Título */}
-                <h2 className="text-md font-normal text-gray-800 mb-2 leading-tight line-clamp-2 wrap-break-word">
+                <h2 className="text-sm font-normal text-gray-800 mb-2 leading-tight line-clamp-2 wrap-break-word">
                     {product.title}
                 </h2>
 

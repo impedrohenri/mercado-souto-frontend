@@ -33,7 +33,7 @@ export default function ProductSlider({products, title}: IProps) {
             
             <CarouselItem 
               key={product.id} 
-              className="pl-4 basis-1/5 max-lg:basis-1/4 max-md:basis-1/2"
+              className="basis-1/6 max-lg:basis-1/4 max-md:basis-1/2"
             >
               <div>
                 <ProductCard 
