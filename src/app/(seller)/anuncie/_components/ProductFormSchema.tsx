@@ -12,15 +12,21 @@ const SimplifiedSpecGroupSchema = z.object({
 
 export const productFormSchema = z.object({
     productImage: z
-        .file("Selecione uma imagem para o produto"),
+        .file("Selecione uma imagem para o produto")
+        .refine((file) => file.size <= 5 * 1024 * 1024, {
+            message: "A imagem deve ter no máximo 5MB",
+        })
+        .refine((file) => ["image/png", "image/jpeg", "image/webp"].includes(file.type), {
+            message: "A imagem deve ser PNG, JPEG ou WEBP"
+        }),
     title: z
-        .string({message: "Informe um título válido"})
-        .nonempty({message: "Informe um título válido"})
+        .string({ message: "Informe um título válido" })
+        .nonempty({ message: "Informe um título válido" })
         .min(5, "O título deve ter ao menos 5 caracteres")
         .max(100, "O título deve ter no máximo 100 caracteres"),
     description: z
-        .string({message: "Informe uma descrição válida"})
-        .nonempty({message: "Informe uma descrição válida"})
+        .string({ message: "Informe uma descrição válida" })
+        .nonempty({ message: "Informe uma descrição válida" })
         .min(20, "A descrição deve ter ao menos 20 caracteres")
         .max(3000, "A descrição deve ter no máximo 3000 caracteres"),
     idCategory: z
@@ -30,12 +36,13 @@ export const productFormSchema = z.object({
     stock: z
         .number("Informe uma quantidade válida").min(1, "O numero de produtos em estoque deve ser maior que 0"),
     specifications: z
-    .array(SimplifiedSpecGroupSchema)
-    .max(15, "Máximo de 15 tópicos permitidos.")
-    .optional(),
+        .array(SimplifiedSpecGroupSchema)
+        .max(15, "Máximo de 15 tópicos permitidos.")
+        .optional(),
     specification: z
-    .string(),
-    rate: z 
+        .string()
+        .optional(),
+    rate: z
         .number()
         .min(1)
         .max(5)
@@ -43,7 +50,7 @@ export const productFormSchema = z.object({
     imageURL: z
         .string()
         .optional(),
-        
+
 })
 
 export type ProductFormSchema = z.infer<typeof productFormSchema>;

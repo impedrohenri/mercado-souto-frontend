@@ -30,11 +30,11 @@ export default function ProductDetails({ productId, produto }: IProps) {
 
                         <p className='text-4xl text-primary mt-3'>R$ {produto.price}</p>
 
-                        <p className='mt-5 text-(--text-secondary) text-lg'>{produto.description}</p>
+                        <p className='mt-5 text-(--text-secondary) text-sm'>{produto.description}</p>
                     </div>
 
                     <div className='flex w-full px-4 gap-x-8'>
-                        <SpecificationsTables specifications={JSON.parse(produto.specification)} className='w-[40%]'/>
+                        <SpecificationsTables specifications={JSON.parse(produto.specification || '[]')} className='w-[40%]'/>
                     </div>
                 </div>
 

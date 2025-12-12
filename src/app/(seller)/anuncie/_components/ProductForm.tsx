@@ -115,7 +115,7 @@ export default function ProductForm() {
                                 }} />
 
                             <ImagePreview image={picture.image} />
-                            {fieldState.error && <FieldError>{fieldState.error.message}</FieldError>}
+                            {fieldState.error && <FieldError className='z-50 bg-amber-50 rounded-b-xl'>{fieldState.error.message}</FieldError>}
                         </Field>)
                         } />
                 </div>

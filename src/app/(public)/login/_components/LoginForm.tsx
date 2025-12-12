@@ -35,8 +35,8 @@ export default function LoginForm() {
       const userData = res.data
       console.log(userData)
 
-      const tokenExpires = new Date();
-      tokenExpires.setSeconds(tokenExpires.getSeconds() + userData.tokenExpiresIn);
+      const tokenExpires = new Date(Date.now() + userData.tokenExpiresIn);
+
 
       localStorage.setItem('user@clientId', userData.clientId);
       localStorage.setItem('user@token', userData.token);
