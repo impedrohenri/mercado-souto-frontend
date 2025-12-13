@@ -13,6 +13,9 @@ const publicRoutes = [
 
 ]
 
+const sellerRoutes = [
+    {path: '/anuncie', whenNotSeller: 'redirect'},
+]
 
 function matchRoute(routePath: string, currentPath: string) {
     if (routePath.includes(':')) {
@@ -36,6 +39,7 @@ export default async function middleware(request: NextRequest){
 
     
     const token = (await cookies()).get('user@token')
+    const role = (await cookies()).get('user@roles')?.value.includes('ROLE_SELLER') ? 'ROLE_SELLER' : 'ROLE_CLIENT';
 
     if (!!token && isPublicRoute?.whenAuthenticated === 'redirect'){
         return NextResponse.redirect(request.nextUrl.origin);
@@ -43,6 +47,15 @@ export default async function middleware(request: NextRequest){
     } else if (!token && !isPublicRoute){
         return NextResponse.redirect(request.nextUrl.origin + whenNotAuthenticated )
 
+    }
+
+    
+    const isSellerRoute = sellerRoutes.find(r =>
+        matchRoute(r.path, path)
+    );
+
+    if (isSellerRoute && role !== 'ROLE_SELLER') {
+        return NextResponse.redirect(new URL('/cadastro-de-vendedor', request.url));
     }
     
     return NextResponse.next();
