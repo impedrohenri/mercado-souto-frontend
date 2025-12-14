@@ -8,18 +8,26 @@ interface IClientState {
   name: string | null,
   email: string | null,
   addresses: TAddress[] | null,
+  setName: (name: string) => void,
+  setEmail: (email: string) => void,
 }
 
-export const useAuthStore = create<IClientState>()(
+export const useClienteStore = create<IClientState>()(
   persist(
     (set) => ({
       name: null,
       email: null,
       addresses: null,
 
-      setName: (data: IClientState) => {
+      setName: (name: string) => {
         set({
-          name: data.name,
+          name: name
+        });
+      },
+
+      setEmail: (email: string) => {
+        set({
+          email: email,
         });
       },
 

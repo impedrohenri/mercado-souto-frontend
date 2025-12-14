@@ -10,15 +10,20 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '../ui/dropdown-menu';
 import { URL_API } from '@/api/index.routes'
 import { useAuthStore } from '@/store/auth'
+import { useClienteStore } from '@/store/cliente';
+import { TClientResponse } from '@/types/Client';
 
 
 export default function Header() {
 
 
-  const { isAuthenticated, token, clientId, clearAuth } = useAuthStore();
+  const { token, clientId, clearAuth } = useAuthStore();
+  const { setName } = useClienteStore();
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
 
-  const [clientData, setClientData] = useState<any>(null);
+  const [clientData, setClientData] = useState<TClientResponse>({} as TClientResponse);
 
   useEffect(() => {
     if (!clientId) return;
@@ -33,6 +38,10 @@ export default function Header() {
         });
         const data = await res.json();
         setClientData(data);
+        setIsAuthenticated(document.cookie.includes('user@token'));
+        setName(data.name)
+
+        
         console.log("Dados do cliente:", data);
       } catch (err) {
         console.error("Erro ao buscar cliente:", err);
@@ -44,6 +53,7 @@ export default function Header() {
 
   const logout = () => {
     clearAuth();
+    localStorage.clear();
     document.cookie = `user@token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
     window.location.href = '/login';
   };
@@ -83,12 +93,6 @@ export default function Header() {
             <Link href={'#'}><div className="h-full px-3 flex items-center hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!">Eletrônicos</div></Link>
             <Link href={'#'}><div className="h-full px-3 flex items-center hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!">Beleza</div></Link>
             <Link href={'#'}><div className="h-full px-3 flex items-center hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!">Pet</div></Link>
-
-            {isAuthenticated && clientData ? (
-              <Link href={'#'}><div className="h-full px-3 flex items-center hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!">{clientData.username}</div></Link>
-            ) : (
-              <Link href={'/login'}><div className="h-full px-3 flex items-center hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!">Entrar</div></Link>
-            )}
 
           </div>
 
@@ -145,7 +149,7 @@ export default function Header() {
                   </DropdownMenuContent>
                 </>) :
                 (<div>
-                  <Link href={"/login"} className='flex text-sm align-middle p-2 hover:bg-gray-100 text-(--text-primary)!'>
+                  <Link href={"/login"} className='flex text-sm align-middle p-2 hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!'>
                     Entrar
                   </Link>
                 </div>)
@@ -174,7 +178,7 @@ export default function Header() {
             <Link href={'/carrinho'}>
               <span className='flex h-full px-2 items-center text-sm hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)! rounded-full'>
                 <Image src={'/static/images/icons/cart-shopping-light-full.svg'} width={20} height={20} alt='' />
-                <span>{clientData?.cart?.length || 0}</span>
+                <span>{clientData?.cart?.items.length || 0}</span>
               </span>
             </Link>
           </div>
