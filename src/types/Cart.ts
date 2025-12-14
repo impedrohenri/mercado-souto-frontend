@@ -1,6 +1,6 @@
 import { TProduct } from "./Product";
 
-export type CartItem = {
+export type TCartItem = {
   id: number;
   isSelected: boolean;
   product: TProduct;
@@ -10,8 +10,8 @@ export type CartItem = {
 };
 
 
-export type Cart = {
+export type TCart = {
   id: number;
-  items: CartItem[];
+  items: TCartItem[];
   totalPrice: number;
 };
