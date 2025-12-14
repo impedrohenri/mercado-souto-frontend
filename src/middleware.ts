@@ -15,6 +15,8 @@ const publicRoutes = [
 
 const sellerRoutes = [
     {path: '/anuncie', whenNotSeller: 'redirect'},
+    {path: '/anuncios', whenNotSeller: 'redirect'},
+    {path: '/vendas', whenNotSeller: 'redirect'},
 ]
 
 function matchRoute(routePath: string, currentPath: string) {
