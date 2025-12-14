@@ -11,11 +11,14 @@ import Link from "next/link";
 import axios from "axios";
 import { URL_API } from "@/api/index.routes";
 import { useState } from "react";
-
+import { useAuthStore } from "@/store/auth";
+import { toast } from "sonner"
 
 export default function LoginForm() {
 
   const [isLoading, setIsLoading] =  useState(false);
+
+  const {setAuth} = useAuthStore();
 
   const router = useRouter();
 
@@ -35,18 +38,22 @@ export default function LoginForm() {
       const userData = res.data
       console.log(userData)
 
+      setAuth(userData);
+
+
       const tokenExpires = new Date(Date.now() + userData.tokenExpiresIn);
-
-
-      localStorage.setItem('user@clientId', userData.clientId);
-      localStorage.setItem('user@token', userData.token);
-      localStorage.setItem('user@roles', JSON.stringify(userData.roles));
       document.cookie = `user@token=${userData.token}; expires=${tokenExpires.toUTCString()}; path=/`;
+      document.cookie = `user@roles=${userData.roles}; expires=${tokenExpires.toUTCString()}; path=/`;
+
+      toast.success("Login realizado com sucesso!");
+      
 
       router.push('/');
 
+
     } catch (error: any) {
         console.error(error)
+        
       
       if (error.response?.status === 401) {
         setError("email", { message: "E-mail ou senha incorretos." });

@@ -15,8 +15,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner"
 import { Toaster } from '@/components/ui/sonner';
+import { useAuthStore } from '@/store/auth';
 
 export default function SignUpForm() {
+
+  const {setAuth} = useAuthStore();
 
   const router = useRouter();
 
@@ -51,17 +54,17 @@ export default function SignUpForm() {
       const response = await axios.post(`${URL_API}/client`, payload);
       const userData = response.data;
 
-      localStorage.setItem('user@clientId', userData.clientId);
-      localStorage.setItem('user@token', userData.token);
-      localStorage.setItem('user@roles', JSON.stringify(userData.roles));
-      document.cookie = `user@token=${userData.token}; expires=${userData.tokenExpiresIn.toUTCString()}; path=/`;
+      setAuth(userData);
+
+      const tokenExpires = new Date(Date.now() + userData.tokenExpiresIn);
+      document.cookie = `user@token=${userData.token}; expires=${tokenExpires.toUTCString()}; path=/`;
+      document.cookie = `user@roles=${userData.roles}; expires=${tokenExpires.toUTCString()}; path=/`;
 
 
       toast.success("Cadastro realizado com sucesso!");
 
-      setTimeout(()=>{
-        router.push('/');
-      }, 1000)
+      router.push('/');
+
 
     } catch (error: any) {
 
@@ -97,7 +100,6 @@ export default function SignUpForm() {
 
   return (
     <form noValidate onSubmit={handleSubmit(onHandleSubmit)} className='flex flex-col gap-y-3'>
-      <Toaster position="top-center"/>
 
       <Controller name='email' control={control} render={({field, fieldState}) => (
         <Field data-invalid={fieldState.invalid}>
