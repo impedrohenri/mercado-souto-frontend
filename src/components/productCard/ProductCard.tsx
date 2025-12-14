@@ -23,7 +23,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     }, [product.price]);
 
 
-    const imageUrl = product.imageURL && product.imageURL.length > 0 ? product.imageURL[0] : '/placeholder.webp';
+    const imageUrl = product.imageURL && product.imageURL.length > 0 ? product.imageURL[0] : null;
     const priceParts = product.price.toFixed(2).split('.');
 
     return (
@@ -31,15 +31,16 @@ export default function ProductCard({ product }: ProductCardProps) {
             <Link href={`/produto/${product.id}`}>
 
                 {/* 1. Imagem do Produto */}
-                <div className="relative w-full h-48 mb-4">
-                    <Image
-                        src={imageUrl}
-                        alt={product.title}
-                        fill
-                        className="object-contain"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        priority 
-                    />
+                <div className={`relative w-full h-48 mb-4 ${imageUrl ? 'text-center' : 'flex items-center justify-center'}`}>
+                    {imageUrl ?
+                        <Image
+                            src={imageUrl}
+                            alt={product.title}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            priority
+                        /> : <i className='fa fa-image text-gray-300 text-7xl'></i>}
                 </div>
 
                 {/* 2. Título */}
@@ -52,7 +53,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     <span className="text-2xl">
                         R$ {priceParts[0]}
                     </span>
-                    
+
                     <span className="text-lg mt-0.5">
                         {priceParts[1]}
                     </span>
