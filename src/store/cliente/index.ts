@@ -7,6 +7,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 
 interface IClientActions {
+  client: TClientResponse | null;
   setName: (name: string) => void;
   setEmail: (email: string) => void;
   setClient: (clientData: TClientResponse) => void;
@@ -32,6 +33,7 @@ export const useClienteStore = create<TClientStore>()(
 
       setClient: (clientData: TClientResponse) => {
         set({
+          client: clientData,
           ...clientData
         });
       },
@@ -50,6 +52,7 @@ export const useClienteStore = create<TClientStore>()(
 
       clearClient: () =>
         set({
+          client: null,
           name: null,
           email: null,
           addresses: [],

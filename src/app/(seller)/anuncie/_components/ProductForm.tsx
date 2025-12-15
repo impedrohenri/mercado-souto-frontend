@@ -15,6 +15,7 @@ import { URL_API } from '@/api/index.routes';
 import axios from 'axios'
 import AttributeFields from './AttributesFields';
 import { axiosInterceptor } from '@/services/axios';
+import { useClienteStore } from '@/store/cliente';
 
 interface IPicture {
     file: File,
@@ -32,6 +33,17 @@ export default function ProductForm() {
     const [picture, setPicture] = useState<IPicture>({} as IPicture);
     const [categories, setCategories] = useState<ICategories[]>([]);
     const [loading, setLoading] = useState<boolean>(false)
+
+      const { seller } = useClienteStore();
+    
+
+      const [sellerId, setSellerId] = useState<number | null>(null);
+    
+      useEffect(() => {
+        if (seller?.id) {
+          setSellerId(seller.id);
+        }
+      }, [seller]);
 
     const { control, handleSubmit } = useForm<ProductFormSchema>({
         resolver: zodResolver(productFormSchema),
@@ -72,10 +84,12 @@ export default function ProductForm() {
         productData.specification = JSON.stringify(data.specifications);
         delete productData.specifications;
 
+        if (productData.specification === "[]") {
+            productData.specification = null;
+        }
 
         try {
             setLoading(true)
-            const sellerId = 1;
 
             const response = await axiosInterceptor.post(`${URL_API}/product/${sellerId}`, productData)
             

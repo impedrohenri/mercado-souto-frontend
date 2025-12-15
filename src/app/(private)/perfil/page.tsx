@@ -43,8 +43,9 @@ export default function UserProfileDashboard() {
     const sidebarItems: SidebarItem[] = [
         { label: "Minha conta", icon: <User size={20} />, href: "/perfil" },
         { label: "Compras", icon: <ShoppingBag size={20} />, href: "/compras" },
-        { label: "Vendas", icon: <Tag size={20} />, href: "/vendas" },
-        { label: "Meu perfil", icon: <User size={20} />, href: "/meu-lperfi" },
+        { label: "Vendas", icon: <FileText size={20} />, href: "/vendas" },
+        { label: "Anuncios", icon: <Tag size={20} />, href: "/anuncios" },
+        { label: "Meu perfil", icon: <User size={20} />, href: "/meu-perfil" },
         { label: "Configurações", icon: <Settings size={20} />, href: "/configuracoes" },
     ]
 

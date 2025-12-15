@@ -17,7 +17,8 @@ import { TClientResponse } from '@/types/Client';
 export default function Header() {
 
   const { token, clientId, clearAuth } = useAuthStore();
-  const { setClient } = useClienteStore();
+  // Precisamos recuperar o 'client' (estado atual) além da função 'setClient'
+  const { client, setClient } = useClienteStore();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -26,7 +27,16 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const hasToken = document.cookie.includes('user@token');
+    setIsAuthenticated(hasToken);
+
     if (!clientId) return;
+
+    if (client?.id && (client.id === clientId)) {
+        console.log("Usando dados do cache (Zustand):", client);
+        setClientData(client); 
+        return;
+    }
 
     const loadClient = async () => {
       try {
@@ -47,10 +57,19 @@ export default function Header() {
       }
     };
 
-    loadClient();
+    const cookieToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('user@token='))
+      ?.split('=')[1];
+
+    if (!!cookieToken) {
+      loadClient();
+      return;
+    }
+
   }, [clientId]);
 
-   useEffect(() => {
+  useEffect(() => {
     setMounted(true);
   }, []);
 
@@ -117,23 +136,23 @@ export default function Header() {
 
                   <DropdownMenuContent className="w-64 z-50 bg-white outline-none text-(--text-secondary!) shadow-xl shadow-gray-500/35 rounded-sm border" align="start" >
 
-                    <DropdownMenuItem className='outline-none'>
-                      <Link href={"/perfil"} className='flex align-middle p-2 hover:bg-gray-100'>
+                    <Link href={"/perfil"} className='flex align-middle p-2 hover:bg-gray-100'>
+                      <DropdownMenuItem className='outline-none'>
                         <span className='rounded-full bg-gray-100 text-xl p-1.5 me-1 border'>{String(clientData?.name).trim().split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase()}</span>
                         <div>
                           <div className='font-medium ms-1'>{String(clientData?.name).split(" ")[0]}</div>
                           <div className='text-sm ms-1'>Meu Perfil</div>
                         </div>
-                      </Link>
-                    </DropdownMenuItem>
+                      </DropdownMenuItem>
+                    </Link>
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem>
-                      <Link href={""} className='flex text-sm align-middle p-2 hover:bg-gray-100 text-(--text-primary)!'>
+                    <Link href={""} className='flex text-sm align-middle p-2 hover:bg-gray-100 text-(--text-primary)!'>
+                      <DropdownMenuItem>
                         Compras
-                      </Link>
-                    </DropdownMenuItem>
+                      </DropdownMenuItem>
+                    </Link>
 
                     <DropdownMenuSeparator />
 
