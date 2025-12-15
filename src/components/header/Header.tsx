@@ -16,14 +16,14 @@ import { TClientResponse } from '@/types/Client';
 
 export default function Header() {
 
-
   const { token, clientId, clearAuth } = useAuthStore();
-  const { setName } = useClienteStore();
+  const { setClient } = useClienteStore();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-
   const [clientData, setClientData] = useState<TClientResponse>({} as TClientResponse);
+
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (!clientId) return;
@@ -39,9 +39,8 @@ export default function Header() {
         const data = await res.json();
         setClientData(data);
         setIsAuthenticated(document.cookie.includes('user@token'));
-        setName(data.name)
+        setClient(data);
 
-        
         console.log("Dados do cliente:", data);
       } catch (err) {
         console.error("Erro ao buscar cliente:", err);
@@ -50,6 +49,12 @@ export default function Header() {
 
     loadClient();
   }, [clientId]);
+
+   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const logout = () => {
     clearAuth();
@@ -86,7 +91,7 @@ export default function Header() {
 
         {/* Linha de baixo */}
         <div className='flex h-10'>
-          <div className='flex mx-auto h-full'>
+          <div className='mx-auto h-full hidden md:flex gap-1 md:gap-3'>
 
             <Link href={'#'}><div className="h-full px-3 flex items-center hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!">Ofertas</div></Link>
             <Link href={'#'}><div className="h-full px-3 flex items-center hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)!">Moda</div></Link>

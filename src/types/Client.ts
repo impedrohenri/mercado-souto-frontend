@@ -5,20 +5,18 @@ import { TSeller } from "./Seller";
 import { TUser } from "./User";
 
 
-
-
 export type TClientResponse = {
-  id: number;
-  user: TUser;
+  id: number | null;
+  user: TUser | null;
   seller: TSeller | null;
   addresses: TAddress[];
-  cart: TCart;
+  cart: TCart | null;
   orders: TOrder[];
   favoriteProducts: TProduct[];
-  name: string;
-  email: string;
-  cpf: string;
-  phone: string;
+  name: string | null;
+  email: string | null;
+  cpf: string | null;
+  phone: string | null;
 }
 
 // ===== Orders =====

@@ -1,3 +1,5 @@
+'use client'
+
 import Button from '@/components/Button/Button'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
@@ -6,6 +8,7 @@ import { ProductFormSchema } from '@/app/(seller)/anuncie/_components/ProductFor
 import Link from 'next/link';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SpecificationsTables from '@/components/SpecsTable/SpecificationsTable';
+import { useState } from 'react';
 
 interface IProps {
     productId: string
@@ -14,11 +17,12 @@ interface IProps {
 
 export default function ProductDetails({ productId, produto }: IProps) {
 
+    const [verMais, setVerMais] = useState(false);
 
     return (
         <Card className='w-[90%]'>
             <CardContent className='flex flex-wrap justify-around pt-10 '>
-                <div className='flex flex-wrap md:w-7/12'>
+                <div className='flex flex-wrap lg:w-7/12'>
                     <div className='w-full md:w-[50%]'>
                         {!!produto.imageURL ? <Image src={produto.imageURL[0] || "/"} alt="" width={1000} height={1000} className='w-full' /> : null}
                     </div>
@@ -30,11 +34,16 @@ export default function ProductDetails({ productId, produto }: IProps) {
 
                         <p className='text-4xl text-primary mt-3'>R$ {produto.price}</p>
 
-                        <p className='mt-5 text-(--text-secondary) text-sm'>{produto.description}</p>
+                        <p className={`mt-5 text-(--text-secondary) text-sm line-clamp-6 lg:line-clamp-none ${verMais ? 'line-clamp-none' : ''}`}>{produto.description}</p>
+                        <div className='mt-2'>
+                            <button className='text-(--primary-blue) font-medium' onClick={() => setVerMais(!verMais)}>
+                                {verMais ? 'Ver menos' : 'Ver mais'}
+                            </button>
+                        </div>
                     </div>
 
-                    <div className='flex w-full px-4 gap-x-8'>
-                        <SpecificationsTables specifications={JSON.parse(produto.specification || '[]')} className='w-[40%]'/>
+                    <div className='flex flex-wrap justify-between w-full'>
+                        <SpecificationsTables specifications={JSON.parse(produto.specification || '[]')} className='w-full sm:w-[46%] mx-auto mt-6'/>
                     </div>
                 </div>
 

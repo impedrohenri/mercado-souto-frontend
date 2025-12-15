@@ -9,10 +9,14 @@ export const axiosInterceptor = axios.create({
 axiosInterceptor.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("user@token");
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("user@token"))
+        ?.split("=")[1];
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      console.log("Request config:", token);
     }
     return config;
   },

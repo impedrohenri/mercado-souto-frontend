@@ -1,23 +1,40 @@
 import { TAddress } from '@/types/Address';
+import { TCart } from '@/types/Cart';
+import { TClientResponse } from '@/types/Client';
 import { email, string } from 'zod';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 
-interface IClientState {
-  name: string | null,
-  email: string | null,
-  addresses: TAddress[] | null,
-  setName: (name: string) => void,
-  setEmail: (email: string) => void,
+interface IClientActions {
+  setName: (name: string) => void;
+  setEmail: (email: string) => void;
+  setClient: (clientData: TClientResponse) => void;
+  clearClient: () => void;
 }
 
-export const useClienteStore = create<IClientState>()(
+type TClientStore = TClientResponse & IClientActions;
+
+export const useClienteStore = create<TClientStore>()(
   persist(
     (set) => ({
-      name: null,
-      email: null,
-      addresses: null,
+      id: null,
+      user: null,
+      seller: null,
+      addresses: [],
+      cart: null,
+      orders: [],
+      favoriteProducts: [],
+      name: "",
+      email: "",
+      cpf: "",
+      phone: "",
+
+      setClient: (clientData: TClientResponse) => {
+        set({
+          ...clientData
+        });
+      },
 
       setName: (name: string) => {
         set({
@@ -35,7 +52,15 @@ export const useClienteStore = create<IClientState>()(
         set({
           name: null,
           email: null,
-          addresses: null
+          addresses: [],
+          cart: null,
+          orders: [],
+          favoriteProducts: [],
+          cpf: null,
+          phone: null,
+          id: null,
+          user: null,
+          seller: null,
         }),
     }),
     {

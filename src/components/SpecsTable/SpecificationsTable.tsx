@@ -26,10 +26,10 @@ export default function SpecificationsTables({ specifications, className }: Spec
               {section.attributes.map((attr, i) => (
                 <tr
                   key={attr.id}
-                  className={i % 2 === 0 ? "bg-gray-300" : "bg-white"}
+                  className={i % 2 === 0 ? "bg-gray-200" : "bg-white"}
                 >
-                  <td className="p-3 font-semibold w-[40%] text-gray-700">{attr.id}</td>
-                  <td className="p-3 text-gray-700">{attr.text}</td>
+                  <td className="p-3 text-sm font-semibold w-[50%] text-gray-700">{attr.id}</td>
+                  <td className="p-3 text-sm text-gray-700">{attr.text}</td>
                 </tr>
               ))}
             </tbody>

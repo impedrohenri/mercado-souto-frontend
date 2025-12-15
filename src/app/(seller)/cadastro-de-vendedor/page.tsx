@@ -11,6 +11,7 @@ import Header from "@/components/header/Header";
 import { axiosInterceptor } from "@/services/axios";
 import { useAuthStore } from "@/store/auth";
 import { cnpjMask } from "@/utils/inputMasks";
+import { useClienteStore } from "@/store/cliente";
 
 
 export default function CnpjForm() {
@@ -18,6 +19,7 @@ export default function CnpjForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { clientId } = useAuthStore();
+  const { setClient } = useClienteStore();
 
   const { control, handleSubmit, setError } = useForm<CnpjFormSchema>({
     resolver: zodResolver(cnpjFormSchema),
@@ -30,28 +32,31 @@ export default function CnpjForm() {
     setIsLoading(true);
     try {
 
-      console.log("Client ID:", data);
-      const res = axiosInterceptor.post(`/api/seller/${clientId}`, data)
+      await axiosInterceptor.post(`/seller/${clientId}`, { cnpj: data.cnpj });
 
-      const response = (await res).data
+      const clientData = await axiosInterceptor.get(`client/${clientId}`);
+      setClient(clientData.data);
+      document.cookie = `user@roles=${clientData.data.user.authorities.map((role: any) => role.name)
+        .join(',')}; path=/`;
 
-      if (response.success) {
-
-        console.log(response.message);
-        router.push('/anuncie');
-      } else {
-
-        setError("cnpj", {
-          message: "O CNPJ não foi encontrado ou está inválido. Tente novamente."
-        });
-      }
+      router.push('/anuncie');
 
     } catch (error: any) {
-      console.error(error);
-      // Erro de rede ou servidor
-      setError("cnpj", {
-        message: "Ocorreu um erro inesperado. Tente novamente."
-      });
+
+      if (error.response?.status === 409) {
+        setError("cnpj", {
+          message: "Já existe um vendedor cadastrado com este CNPJ."
+        });
+      } else if (error.response?.status === 400) {
+        setError("cnpj", {
+          message: "CNPJ inválido. Verifique e tente novamente."
+        });
+      } else {
+        setError("cnpj", {
+          message: "Ocorreu um erro inesperado. Tente novamente."
+        });
+      }
+      return;
     } finally {
       setIsLoading(false);
     }
@@ -63,8 +68,8 @@ export default function CnpjForm() {
       <div className='flex flex-col  items-center h-screen bg-gray-100'>
 
         <h2 className='text-2xl font-normal text-center my-32'>
-            Ops! parece que você ainda não é vendedor.
-          </h2>
+          Ops! parece que você ainda não é vendedor.
+        </h2>
 
         <div className='bg-white p-8 rounded-lg shadow-xl w-full max-w-md'>
 
@@ -76,7 +81,7 @@ export default function CnpjForm() {
             <Controller name='cnpj' control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                
+
                   <div className="flex flex-col">
                     <FieldInput
                       type="text"
@@ -87,12 +92,9 @@ export default function CnpjForm() {
                       onChange={(e) => {
                         field.onChange(cnpjMask(e.target.value));
                       }}
-                      maxLength={18} 
+                      maxLength={18}
                       inputMode="numeric"
                     />
-                    <p className="text-sm text-gray-500 mt-1">
-                      Escreva apenas números, sem traços ou pontos.
-                    </p>
                   </div>
 
                   {fieldState.error && <FieldError>{fieldState.error.message}</FieldError>}
