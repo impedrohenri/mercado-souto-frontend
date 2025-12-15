@@ -30,6 +30,7 @@ export const useClienteStore = create<TClientStore>()(
       email: "",
       cpf: "",
       phone: "",
+      client: null,
 
       setClient: (clientData: TClientResponse) => {
         set({
