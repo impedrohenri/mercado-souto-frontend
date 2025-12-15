@@ -12,48 +12,64 @@ import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ProductFormSchema, productFormSchema, SimplifiedSpecGroup } from './ProductFormSchema';
 import { URL_API } from '@/api/index.routes';
-import axios from 'axios'
 import AttributeFields from './AttributesFields';
 import { axiosInterceptor } from '@/services/axios';
 import { useClienteStore } from '@/store/cliente';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { z } from 'zod'; // Importe o Zod aqui
 
 interface IPicture {
-    file: File,
+    file: File | null,
     image: string
 }
 
-interface ICategories{
+interface ICategories {
     id: number,
     name: string
 }
 
+interface ProductFormProps {
+    productId?: string;
+}
 
-export default function ProductForm() {
+export default function ProductForm({ productId }: ProductFormProps) {
 
-    const [picture, setPicture] = useState<IPicture>({} as IPicture);
+    const [picture, setPicture] = useState<IPicture>({ file: null, image: '' });
     const [categories, setCategories] = useState<ICategories[]>([]);
     const [loading, setLoading] = useState<boolean>(false)
+    const router = useRouter();
 
-      const { seller } = useClienteStore();
-    
+    const { seller } = useClienteStore();
+    const [sellerId, setSellerId] = useState<number | null>(null);
 
-      const [sellerId, setSellerId] = useState<number | null>(null);
-    
-      useEffect(() => {
+    const isEditMode = !!productId;
+
+    useEffect(() => {
         if (seller?.id) {
-          setSellerId(seller.id);
+            setSellerId(seller.id);
         }
-      }, [seller]);
+    }, [seller]);
 
-    const { control, handleSubmit } = useForm<ProductFormSchema>({
-        resolver: zodResolver(productFormSchema),
+    // --- CORREÇÃO DO SCHEMA ---
+    // Se estiver editando, estendemos o schema original tornando a imagem opcional.
+    // O .extend sobrescreve a regra do campo específico.
+    const currentSchema = isEditMode
+        ? productFormSchema.extend({
+            productImage: z.any().optional(), 
+          })
+        : productFormSchema;
+
+    const { control, handleSubmit, reset, formState: { errors } } = useForm<ProductFormSchema>({
+        // Usamos o currentSchema que se adapta ao modo
+        resolver: zodResolver(currentSchema) as any,
         defaultValues: {
             title: "",
             description: "",
-            productImage: "" as unknown as File,
-            price: "" as unknown as number,
-            stock: "" as unknown as number,
-            idCategory: "" as unknown as number,
+            productImage: undefined, 
+            price: 0,
+            stock: 0,
+            idCategory: 0,
             specifications: []
         }
     })
@@ -63,54 +79,113 @@ export default function ProductForm() {
         name: "specifications",
     });
 
-
     useEffect(() => {
         axiosInterceptor.get(`${URL_API}/category`)
-        .then((resp) => {
-            setCategories(resp.data)
-        })
-
-        console.log(categories)
+            .then((resp) => {
+                setCategories(resp.data)
+            })
     }, [])
 
+    useEffect(() => {
+        if (isEditMode && productId) {
+            setLoading(true);
+            axiosInterceptor.get(`${URL_API}/product/${productId}`)
+                .then((response) => {
+                    const product = response.data;
+                    
+                    reset({
+                        title: product.title,
+                        description: product.description,
+                        price: product.price,
+                        stock: product.stock,
+                        idCategory: product.category?.id, 
+                        specifications: product.specification ? JSON.parse(product.specification) : [],
+                    });
+
+                    if (product.imageURL && product.imageURL.length > 0) {
+                        setPicture({ file: null, image: product.imageURL[0] });
+                    }
+                })
+                .catch((err) => {
+                    console.error(err);
+                    toast.error("Erro ao carregar dados do produto.");
+                    router.push('/anuncios');
+                })
+                .finally(() => setLoading(false));
+        }
+    }, [isEditMode, productId, reset, router]);
+
+    // Função auxiliar para debug de erros do formulário
+    const onInvalid = (errors: any) => {
+        console.error("Erros de validação do Zod:", errors);
+        toast.warning("Verifique os campos obrigatórios.");
+    }
+
     const onHandleSubmit = async (data: any) => {
-
-        const productImage = data.productImage
+        console.log("Submit iniciado com dados:", data);
+        
+        const productImage = data.productImage;
         let formData = new FormData();
-        formData.append("image", productImage)
-        delete data.productImage;
-        const productData = data
+        
+        if (productImage instanceof File) {
+            formData.append("image", productImage);
+        }
 
-        productData.specification = JSON.stringify(data.specifications);
-        delete productData.specifications;
+        // Remove a imagem do payload JSON
+        const payloadData = { ...data };
+        delete payloadData.productImage;
 
-        if (productData.specification === "[]") {
-            productData.specification = null;
+        // Formatações
+        payloadData.specification = JSON.stringify(data.specifications);
+        // CUIDADO: Verifique se sua API espera description como string JSON ou texto puro.
+        // Se for texto normal, remova a linha abaixo. Se for JSON, mantenha.
+        // payloadData.description = JSON.stringify(data.description); 
+        delete payloadData.specifications;
+
+        if (payloadData.specification === "[]") {
+            payloadData.specification = null;
         }
 
         try {
-            setLoading(true)
+            setLoading(true);
+            let currentProductId = productId;
 
-            const response = await axiosInterceptor.post(`${URL_API}/product/${sellerId}`, productData)
-            
-            const productId = response.data.id
-            
-            const imageResponse = await axiosInterceptor.post(`${URL_API}/product/image/${productId}`, formData)
+            if (isEditMode) {
+                // PUT
+                await axiosInterceptor.put(`${URL_API}/product/${productId}`, payloadData);
+                toast.success("Produto atualizado com sucesso!");
+            } else {
+                // POST
+                const response = await axiosInterceptor.post(`${URL_API}/product/${sellerId}`, payloadData);
+                currentProductId = response.data.id;
+                toast.success("Produto cadastrado com sucesso!");
+            }
+
+            // Upload de imagem apenas se houver arquivo novo
+            if (productImage instanceof File && currentProductId) {
+                await axiosInterceptor.post(`${URL_API}/product/image/${currentProductId}`, formData);
+            }
+
+            // Redireciona sempre que der sucesso
+            router.push('/anuncios');
 
         } catch (err) {
-            
+            console.error(err);
+            toast.error(`Erro ao ${isEditMode ? 'atualizar' : 'cadastrar'} o produto.`);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-
-
     }
 
     return (
         <>
             <CardHeader className='border-b gap-0'>
-                <span className='text-lg text-(--text-primary) font-semibold'>Dados principais</span>
-                <span className='text-(--text-secondary)'>Preecha o formulário abaixo com os principais dados do produto</span>
+                <span className='text-lg text-(--text-primary) font-semibold'>
+                    {isEditMode ? "Editar Dados" : "Dados principais"}
+                </span>
+                <span className='text-(--text-secondary)'>
+                    {isEditMode ? "Atualize as informações do seu produto" : "Preencha o formulário abaixo com os principais dados do produto"}
+                </span>
             </CardHeader>
             <CardContent className='flex flex-wrap justify-center md:justify-evenly gap-y-8 gap-x-8'>
 
@@ -129,6 +204,7 @@ export default function ProductForm() {
                                 }} />
 
                             <ImagePreview image={picture.image} />
+                            {/* Exibe erro se existir */}
                             {fieldState.error && <FieldError className='z-50 bg-amber-50 rounded-b-xl'>{fieldState.error.message}</FieldError>}
                         </Field>)
                         } />
@@ -162,7 +238,6 @@ export default function ProductForm() {
                             {fieldState.error && <FieldError>{fieldState.error.message}</FieldError>}
                         </Field>)
                         } />
-
                 </div>
 
                 <hr className='w-[90%] md:my-6' />
@@ -204,7 +279,10 @@ export default function ProductForm() {
                         render={({ field, fieldState }) =>
                         (<Field className='flex flex-col w-full md:w-[40%]'>
                             <FieldLabel className='font-semibold text-md'>Categoria</FieldLabel>
-                            <Select value={String(field.value)} onValueChange={(v) => field.onChange(Number(v))}>
+                            <Select 
+                                value={field.value ? String(field.value) : undefined} 
+                                onValueChange={(v) => field.onChange(Number(v))}
+                            >
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Categoria" />
                                 </SelectTrigger>
@@ -257,22 +335,25 @@ export default function ProductForm() {
                                 type="button"
                                 variant="secondary"
                                 className='px-4 py-3 mx-auto'
-                            onClick={() => appendSpec({ 
-                                title: '', 
-                                attributes: [{ id: '', text: '' }]
-                            } as SimplifiedSpecGroup)}>
+                                onClick={() => appendSpec({ 
+                                    title: '', 
+                                    attributes: [{ id: '', text: '' }]
+                                } as SimplifiedSpecGroup)}>
                                 + Adicionar Especificações
                             </Button>
                         )}
                     </div>
                 </div>
-                
-
             </CardContent>
             <CardFooter>
-                
-                <Button variant="primary" onClick={handleSubmit(onHandleSubmit)} className='px-5 py-2 ms-auto' disabled={loading}>
-                    {loading? "Cadastrando...": "Cadastrar"}
+                {/* Adicionado onInvalid para mostrar erros no console se o submit não funcionar */}
+                <Button 
+                    variant="primary" 
+                    onClick={handleSubmit(onHandleSubmit, onInvalid)} 
+                    className='px-5 py-2 ms-auto' 
+                    disabled={loading}
+                >
+                    {loading ? (isEditMode ? "Salvando..." : "Cadastrando...") : (isEditMode ? "Salvar Alterações" : "Cadastrar")}
                 </Button>
             </CardFooter>
         </>
