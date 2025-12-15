@@ -9,6 +9,10 @@ import Link from 'next/link';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SpecificationsTables from '@/components/SpecsTable/SpecificationsTable';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { axiosInterceptor } from '@/services/axios';
+import { useClienteStore } from '@/store/cliente';
+import { toast } from 'sonner';
 
 interface IProps {
     productId: string
@@ -16,8 +20,42 @@ interface IProps {
 }
 
 export default function ProductDetails({ productId, produto }: IProps) {
-
+    const router = useRouter();
     const [verMais, setVerMais] = useState(false);
+    
+    
+    const [quantity, setQuantity] = useState<string>("1");
+    const [isLoading, setIsLoading] = useState(false);
+
+    
+    const {cart} = useClienteStore(); 
+
+    
+    const handleAddToCart = async () => {
+        if (!cart?.id) {
+            alert("Você precisa estar logado para adicionar itens ao carrinho.");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const response = await axiosInterceptor.post(`/cart/${cart.id}/product/${productId}`, {quantity: parseInt(quantity)});
+
+            toast.success("Produto adicionado ao carrinho com sucesso!");
+        } catch (error) {
+
+            
+            console.error("Erro de rede:", error);
+            alert("Erro de conexão com o servidor.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Função auxiliar para criar array de quantidades baseado no estoque (max 10)
+    const availableQuantity = Math.min(produto.stock, 10);
+    const quantityOptions = Array.from({ length: availableQuantity }, (_, i) => (i + 1).toString());
 
     return (
         <Card className='w-[90%]'>
@@ -65,33 +103,54 @@ export default function ProductDetails({ productId, produto }: IProps) {
                     </p>
 
                     <div className='text-primary text-xl mt-5'>
-                        <span className='font-medium'>Estoque {produto.stock > 0 ? "disponível" : "indiponível"}</span>
+                        <span className='font-medium'>Estoque {produto.stock > 0 ? "disponível" : "indisponível"}</span>
 
-
-
-                        <Select>
+                        {/* 3. Select conectado ao estado 'quantity' */}
+                        <Select onValueChange={setQuantity} value={quantity} disabled={produto.stock === 0}>
                             <SelectTrigger className="w-full border-none shadow-none p-0 justify-start">
                                 <span className='text-primary text-xl'>Quantidade:</span>
-
-                                <SelectValue />
+                                <SelectValue placeholder="1" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {["1", "2", "3", "4", "5", "6", "7", "8", "9", "10",].map((quantidade) => {
-                                        return <SelectItem value={quantidade} key={quantidade}><span className='text-primary text-xl font-medium border-s-(--primary-blue) border-s-4 rounded-md ps-2'>{quantidade} unidades</span></SelectItem>
-                                    })}
+                                    {/* 4. Renderização dinâmica baseada no estoque real */}
+                                    {quantityOptions.length > 0 ? quantityOptions.map((qtd) => (
+                                        <SelectItem value={qtd} key={qtd}>
+                                            <span className='text-primary text-xl font-medium border-s-(--primary-blue) border-s-4 rounded-md ps-2'>
+                                                {qtd} {parseInt(qtd) === 1 ? 'unidade' : 'unidades'}
+                                            </span>
+                                        </SelectItem>
+                                    )) : (
+                                        <SelectItem value="0" disabled>Sem estoque</SelectItem>
+                                    )}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
 
                     </div>
 
-                    <Button variant='primary' className='w-full py-4 text-xl font-medium  mt-3'>
+                    <Button 
+                        variant='primary' 
+                        className='w-full py-4 text-xl font-medium mt-3'
+                        disabled={produto.stock === 0}
+                    >
                         Comprar agora
                     </Button>
 
-                    <Button variant='secondary' className='w-full py-4 text-xl text-(--primary-blue) font-medium bg-(--terciary-blue) mt-3'>
-                        <i className='fa fa-cart-plus'></i> Adicionar ao carrinho
+                    {/* 5. Botão conectado à função handleAddToCart com estado de loading */}
+                    <Button 
+                        onClick={handleAddToCart}
+                        disabled={isLoading || produto.stock === 0}
+                        variant='secondary' 
+                        className='w-full py-4 text-xl text-(--primary-blue) font-medium bg-(--terciary-blue) mt-3 flex items-center justify-center gap-2'
+                    >
+                        {isLoading ? (
+                            <span>Adicionando...</span>
+                        ) : (
+                            <>
+                                <i className='fa fa-cart-plus'></i> Adicionar ao carrinho
+                            </>
+                        )}
                     </Button>
                 </div>
             </CardContent>
