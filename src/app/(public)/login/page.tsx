@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import PublicHeader from '../../../components/PublicHeader/PublicHeader'
 import LoginForm from './_components/LoginForm'
+import Button from '@/components/Button/Button'
 
 export default function Login() {
 
@@ -11,6 +12,22 @@ export default function Login() {
 
         <div className='font-semibold mx-auto text-3xl w-full md:w-[45%] text-(--text-primary) my-4 px-8'>
           Digite seu e-mail ou telefone para iniciar sessão
+
+
+
+          <div className='mt-64'>
+            <a 
+            href='http://137.184.83.125/downloads/mercado-souto-mobile.webp'
+            className=""
+            download
+          >
+            <Button variant='secondary' className='px-2 py-2'>Baixe o App aqui</Button>
+          </a>
+          
+          <p className="text-center text-[11px] text-gray-500 mt-1">
+            Versão atualizada 2025 para Android
+          </p>
+          </div>
         </div>
 
         <div className='d-flex flex-col bg-white rounded-2xl border border-gray-200 w-full sm:w-[468px] mx-auto mt-2 p-8 gap-4 text-left'>
