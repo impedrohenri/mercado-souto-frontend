@@ -17,7 +17,7 @@ export default function Login() {
 
           <div className='mt-64'>
             <a 
-            href='http://137.184.83.125/downloads/mercado-souto-mobile.webp'
+            href='http://137.184.83.125/downloads/mercado-souto-app.apk'
             className=""
             download
           >
