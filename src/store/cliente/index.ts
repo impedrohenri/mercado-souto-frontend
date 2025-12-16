@@ -2,6 +2,7 @@ import { TAddress } from '@/types/Address';
 import { TCart } from '@/types/Cart';
 import { TClientResponse } from '@/types/Client';
 import { email, string } from 'zod';
+import { ca } from 'zod/v4/locales';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
@@ -11,6 +12,7 @@ interface IClientActions {
   setName: (name: string) => void;
   setEmail: (email: string) => void;
   setClient: (clientData: TClientResponse) => void;
+  setCart: (cartData: TCart) => void;
   clearClient: () => void;
 }
 
@@ -48,6 +50,12 @@ export const useClienteStore = create<TClientStore>()(
       setEmail: (email: string) => {
         set({
           email: email,
+        });
+      },
+
+      setCart: (cartData: TCart) => {
+        set({
+          cart: cartData
         });
       },
 

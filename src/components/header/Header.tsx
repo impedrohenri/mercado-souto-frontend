@@ -18,7 +18,7 @@ export default function Header() {
 
   const { token, clientId, clearAuth } = useAuthStore();
   // Precisamos recuperar o 'client' (estado atual) além da função 'setClient'
-  const { client, setClient } = useClienteStore();
+  const { client, setClient, cart } = useClienteStore();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -202,7 +202,7 @@ export default function Header() {
             <Link href={'/carrinho'}>
               <span className='flex h-full px-2 items-center text-sm hover:bg-[rgb(0,0,0,0.05)] text-(--text-primary)! rounded-full'>
                 <Image src={'/static/images/icons/cart-shopping-light-full.svg'} width={20} height={20} alt='' />
-                <span>{clientData?.cart?.items.length || 0}</span>
+                <span>{cart?.items.length || 0}</span>
               </span>
             </Link>
           </div>

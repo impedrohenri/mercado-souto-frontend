@@ -53,7 +53,7 @@ interface Cart {
 
 export default function Carrinho() {
   const router = useRouter();
-  const { cart: cartStore } = useClienteStore();
+  const { cart: cartStore, setCart } = useClienteStore();
   const [cartData, setCartData] = useState<Cart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -99,6 +99,7 @@ export default function Carrinho() {
     try {
       const response = await axiosInterceptor.delete(`/cart/${cartData.id}/product/${productId}`);
       setCartData(response.data);
+      setCart(response.data);
       toast.success("Item removido.");
     } catch (error) {
       toast.error("Erro ao remover item.");
